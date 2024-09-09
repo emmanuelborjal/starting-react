@@ -57,7 +57,7 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/pokemon.json')
+    fetch('http://localhost:3000/starting-react/pokemon.json')
       .then(res => res.json())
       .then(data => setPokemon(data));
   }, []);
