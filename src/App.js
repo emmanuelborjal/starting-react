@@ -1,59 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
 
 import './App.css';
 
-const PokemonRow = ({ pokemon, onSelect }) => (
-  <tr>
-    <td>{pokemon.name.english}</td>
-    <td>{pokemon.type.join(', ')}</td>
-    <td>
-      <Button variant="contained" onClick={() => onSelect(pokemon)}>
-        Select!
-      </Button>
-    </td>
-  </tr>
-);
-
-PokemonRow.propTypes = {
-  pokemon: PropTypes.shape({
-    name: PropTypes.shape({
-      english: PropTypes.string.isRequired,
-    }),
-    type: PropTypes.arrayOf(PropTypes.string.isRequired),
-  }),
-  onSelect: PropTypes.func.isRequired,
-};
-
-const PokemonInfo = ({ name, base }) => (
-  <div>
-    <h1>{name.english}</h1>
-    <table>
-      {Object.keys(base).map(key => (
-        <tr key={key}>
-          <td>{key}</td>
-          <td>{base[key]}</td>
-        </tr>
-      ))}
-    </table>
-  </div>
-);
-
-PokemonInfo.propTypes = {
-  name: PropTypes.shape({
-    english: PropTypes.string.isRequired,
-  }),
-  base: PropTypes.shape({
-    HP: PropTypes.number.isRequired,
-    Attack: PropTypes.number.isRequired,
-    Defense: PropTypes.number.isRequired,
-    'Sp. Attack': PropTypes.number.isRequired,
-    'Sp. Defense': PropTypes.number.isRequired,
-    Speed: PropTypes.number.isRequired,
-  }),
-};
+import PokemonInfo from './components/PokemonInfo';
+import PokemonFilter from './components/PokemonFilter';
+import PokemonTable from './components/PokemonTable';
+import PokemonContext from './PokemonContext';
 
 const Title = styled.h1`
   text-align: center;
@@ -68,74 +22,41 @@ const Container = styled.div`
   width: 800px;
   padding-top: 1rem;
 `;
-const Input = styled.input`
-  width: 100%;
-  font-size: x-large;
-  padding: 0.2rem;
-`;
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      filter: '',
-      pokemon: [],
-      selectedItem: null,
-    };
-  }
+function App() {
+  const [filter, setFilter] = useState('');
+  const [pokemon, setPokemon] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  componentDidMount() {
+  useEffect(() => {
     fetch('http://localhost:3000/starting-react/pokemon.json')
       .then(res => res.json())
-      .then(pokemon => this.setState({ ...this.state, pokemon }));
-  }
+      .then(data => setPokemon(data));
+  }, []);
 
-  render() {
-    return (
+  return (
+    <PokemonContext.Provider
+      value={{
+        filter,
+        pokemon,
+        selectedItem,
+        setFilter,
+        setPokemon,
+        setSelectedItem,
+      }}
+    >
       <Container>
         <Title>Pokemon Search</Title>
         <TwoColumnLayout>
           <div>
-            <Input
-              value={this.state.filter}
-              onChange={e =>
-                this.setState({ ...this.state, filter: e.target.value })
-              }
-            />
-            <table width="100%">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.pokemon
-                  .filter(pokemon =>
-                    pokemon.name.english
-                      .toLowerCase()
-                      .includes(this.state.filter.toLocaleLowerCase())
-                  )
-                  .slice(0, 20)
-                  .map(pokemon => (
-                    <PokemonRow
-                      pokemon={pokemon}
-                      key={pokemon.id}
-                      onSelect={pokemon =>
-                        this.setState({ ...this.state, selectedItem: pokemon })
-                      }
-                    />
-                  ))}
-              </tbody>
-            </table>
+            <PokemonFilter />
+            <PokemonTable />
           </div>
-          {this.state.selectedItem && (
-            <PokemonInfo {...this.state.selectedItem} />
-          )}
+          <PokemonInfo />
         </TwoColumnLayout>
       </Container>
-    );
-  }
+    </PokemonContext.Provider>
+  );
 }
 
 export default App;
