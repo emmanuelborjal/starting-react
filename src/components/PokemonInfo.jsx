@@ -1,10 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import useStore from '../store';
 
 import PokemonType from '../pokemonType';
 
 const PokemonInfo = () => {
-  const selectedItem = useSelector(state => state.selectedItem);
+  const selectedItem = useStore(state => state.selectedItem);
 
   return (
     selectedItem && (
